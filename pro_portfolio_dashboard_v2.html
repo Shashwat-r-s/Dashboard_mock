@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Professional Portfolio Dashboard — Static Live Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b1020; --panel:#12172a; --card:#0f1426; --ink:#e8ecf8; --muted:#9aa4bf; --line:#1e2643;
+    --brand:#4f8cff; --ok:#30d158; --warn:#ffd60a; --bad:#ff453a; --accent:#a78bfa;
+    --shadow:0 16px 32px rgba(0,0,0,.33); --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:linear-gradient(180deg,#0b1020,#0c1227);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1260px;margin:28px auto;padding:0 20px}
+  h1{font-size:28px;margin:0 0 18px;letter-spacing:.2px}
+  h2{font-size:20px;margin:0 0 10px}
+  .grid{display:grid;grid-template-columns:340px 1fr;gap:18px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .panel.pad{padding:16px 18px}
+  .muted{color:var(--muted)}
+  .note{font-size:12px;color:var(--muted)}
+  .btn{display:inline-flex;gap:.5rem;align-items:center;background:var(--brand);color:#fff;border:none;padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  .text{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#0a0f22;color:var(--ink);font-size:14px}
+  label{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:.4rem;margin:8px 0 6px}
+  .divider{height:1px;background:var(--line);margin:14px 0}
+
+  /* Info tooltips */
+  .info{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:#1a2350;color:#a5b4fc;font-weight:800;font-size:11px;cursor:help;position:relative}
+  .info[data-tip]:hover::after,.info[data-tip]:focus::after{
+    content:attr(data-tip);position:absolute;z-index:10;left:50%;transform:translateX(-50%);bottom:125%;
+    min-width:220px;max-width:380px;background:#0b1020;color:#e8ecf8;border:1px solid #263058;border-radius:12px;padding:10px 12px;font-size:12px;box-shadow:var(--shadow);white-space:normal}
+  .info[data-tip]:hover::before,.info[data-tip]:focus::before{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:112%;border:6px solid transparent;border-top-color:#0b1020}
+
+  /* KPI metrics */
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .metric{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .metric h3{margin:0 0 8px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:.35rem;letter-spacing:.2px}
+  .metric .v{font-size:22px;font-weight:800;letter-spacing:.2px}
+  .chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700}
+  .chip.ok{background:rgba(48,209,88,.18);color:var(--ok)}.chip.bad{background:rgba(255,69,58,.18);color:var(--bad)}
+
+  /* Cards / tabs */
+  .tabs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+
+  /* Treemap mock */
+  .treemap{display:grid;grid-template-columns:repeat(8,1fr);grid-auto-rows:22px;gap:4px}
+  .block{border-radius:6px}
+  .g{background:#113a2e}.y{background:#3a3111}.r{background:#3a1111}
+
+  /* Heatmap */
+  table{border-collapse:collapse;width:100%}
+  .heat{width:100%;font-size:12px}
+  .heat th,.heat td{border:1px solid var(--line);padding:6px;text-align:center}
+  .hm{border-radius:6px;padding:6px;color:#fff}
+  .neg{background:#46222c}.neu{background:#1a2036}.pos{background:#1f3e29}
+
+  /* Chart boxes */
+  .chart{width:100%;height:240px;border:1px dashed var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+  .svgbox{width:100%;height:260px;display:block}
+
+  /* Table */
+  .tbl{width:100%;border-collapse:collapse;font-size:13px}
+  .tbl th,.tbl td{border:1px solid var(--line);padding:8px}
+  .tbl th{background:#0d1430;text-align:left}
+
+  /* Sliders */
+  .slider{appearance:none;width:320px;height:6px;border-radius:999px;background:#253057;outline:none}
+  .slider::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:var(--brand);cursor:pointer}
+  .sim-ctrls{display:flex;gap:24px;flex-wrap:wrap;align-items:center}
+
+  /* Callouts */
+  .callout{background:#0b122d;border:1px solid var(--line);border-radius:12px;padding:12px}
+  .warn{background:#301d00;border-color:#4d3c07}
+
+  /* Portfolio builder */
+  .row{display:flex;gap:8px;align-items:center}
+  .row>*{flex:1}
+  .holdings{margin-top:10px;max-height:200px;overflow:auto;border:1px solid var(--line);border-radius:12px}
+  .pill{display:inline-flex;gap:.35rem;align-items:center;padding:4px 8px;border-radius:999px;border:1px solid var(--line);font-size:12px;background:#0a1026}
+  .badge{font-size:12px;color:#cbd5e1;background:#1a2350;border-radius:999px;padding:2px 6px;margin-left:6px}
+
+  /* Mini-cards for HD features */
+  .mini{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .minicard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+  .bar{height:8px;background:#263058;border-radius:999px;overflow:hidden}
+  .bar>span{display:block;height:100%;background:var(--brand)}
+
+  /* Responsive */
+  @media (max-width: 980px){.grid{grid-template-columns:1fr}.tabs{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width: 560px){.metrics{grid-template-columns:1fr}.sim-ctrls{gap:12px}}
+
+@media print {
+  body { background: #fff !important; color: #000 !important; }
+  .panel, .card, .metric { box-shadow: none !important; }
+  .btn, .slider { display: none !important; }
+  .wrap { max-width: 100%; }
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Professional Portfolio Risk & Allocation Dashboard</h1>
+  <div class="grid">
+    <!-- LEFT SIDEBAR -->
+    <div class="panel pad">
+      <h3 style="margin:0 0 8px;display:flex;gap:.5rem;align-items:center">
+        Portfolio Builder <span class="badge" id="asset-count"></span>
+      </h3>
+      <label>Symbol (type to search)
+        <span class="info" data-tip="Start typing, fuzzy suggestions appear. Example: AAPL, SPY, BTC.">i</span>
+      </label>
+      <input id="symbol" class="text" list="symList" placeholder="e.g., SPY" />
+      <datalist id="symList"></datalist>
+
+      <label>Units
+        <span class="info" data-tip="Enter how many units you hold. We use sample prices from the local DB.">i</span>
+      </label>
+      <input id="units" class="text" type="number" min="0" step="1" value="10" />
+
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="addBtn">Add to Portfolio</button>
+        <button class="btn ghost" id="clearBtn">Clear</button>
+      </div>
+      <div class="divider"></div>
+
+      <div class="holdings" id="holdingsBox">
+        <table class="tbl" aria-label="Current holdings">
+          <thead><tr><th>Symbol</th><th>Name</th><th>Units</th><th>Price</th><th>Value</th><th></th></tr></thead>
+          <tbody id="holdings"></tbody>
+        </table>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px">
+        <div class="pill">Total Value: <strong id="totalVal">$0</strong></div>
+        <button class="btn ghost" id="exportBtn">Export CSV</button>
+      </div>
+
+      <div class="divider"></div>
+      <h3 style="margin:0 0 6px">Preset</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn ghost" data-preset="balanced">Balanced (SPY, TLT, GLD, BTC, ETH)</button>
+        <button class="btn ghost" data-preset="growth">Growth (SPY, QQQ, NVDA, BTC)</button>
+        <button class="btn ghost" data-preset="defensive">Defensive (TLT, IEF, GLD, XLU)</button>
+      </div>
+    </div>
+
+    <!-- RIGHT MAIN -->
+    <div>
+      <!-- KPIs -->
+      <div class="metrics">
+        <div class="metric">
+          <h3>Annual Return <span class="info" data-tip="Expected annualized return (from sample data).">i</span></h3>
+          <div class="v" id="kpi-ret">—</div>
+          <div class="chip ok" id="kpi-ret-chip">Above target</div>
+        </div>
+        <div class="metric">
+          <h3>Volatility <span class="info" data-tip="Annualized standard deviation estimate.">i</span></h3>
+          <div class="v" id="kpi-vol">—</div>
+          <div class="chip ok">Within band</div>
+        </div>
+        <div class="metric">
+          <h3>Sharpe <span class="info" data-tip="(Return − 2%) / Volatility.">i</span></h3>
+          <div class="v" id="kpi-sharpe">—</div>
+          <div class="chip ok">Healthy</div>
+        </div>
+        <div class="metric">
+          <h3>VaR / ES (95%) <span class="info" data-tip="1‑day Value‑at‑Risk / Expected Shortfall at 95% from sample vol.">i</span></h3>
+          <div class="v" id="kpi-var">—</div>
+          <div class="chip bad">Tail risk</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="card">
+          <h3 style="margin:0 0 10px;display:flex;gap:.5rem;align-items:center">
+            Risk & Correlation
+            <span class="info" data-tip="Left: risk contribution treemap (weights × vol). Right: correlation heatmap from asset-class heuristics.">i</span>
+          </h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <div class="muted" style="margin-bottom:6px">Risk Contribution (Treemap)</div>
+              <div class="treemap" id="treemap" aria-hidden="true"></div>
+            </div>
+            <div>
+              <div class="muted" style="margin-bottom:6px">Correlation Heatmap (ρ)</div>
+              <table class="heat" aria-label="Correlation matrix">
+                <thead><tr id="corr-head"><th></th></tr></thead>
+                <tbody id="corr-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin:0 0 10px;display:flex;gap:.5rem;align-items:center">
+            Performance & Rebalancing
+            <span class="info" data-tip="Top: normalized performance (simulated). Bottom: actions to return to target 20/20/10/40/10 preset.">i</span>
+          </h3>
+          <svg class="svgbox" id="lineChart" role="img" aria-label="Portfolio performance line"></svg>
+          <div class="divider"></div>
+          <table class="tbl" aria-label="Rebalancing suggestions">
+            <thead><tr><th>Asset</th><th>Current %</th><th>Target %</th><th>Diff</th><th>Action</th></tr></thead>
+            <tbody id="rebal"></tbody>
+          </table>
+          <div class="note" style="margin-top:8px">
+            <span class="info" data-tip="Rebalance when deviation ≥2% from target.">i</span>
+            Threshold policy: ±2% band
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HD FEATURE WIDGETS -->
+  <div class="panel pad" style="margin-top:18px">
+    <h2 style="display:flex;gap:.5rem;align-items:center">
+      Advanced Feature Widgets
+      <span class="info" data-tip="Interactive exhibits for explainability, scenarios, attribution, uncertainty and export.">i</span>
+    </h2>
+
+    <div class="mini" style="margin-top:8px">
+      <!-- Explainability -->
+      <div class="minicard">
+        <h4 style="margin:0 0 8px">Explainability & Narrative</h4>
+      <!-- Advanced Metrics (user-specified) -->
+      <div class="minicard">
+        <h4 style="margin:0 0 8px">Advanced Metrics</h4>
+        <div class="callout">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div><strong>Maximum Drawdown</strong><br><span class="muted">–18%</span></div>
+            <div><strong>Sortino Ratio</strong><br><span class="muted">1.45</span></div>
+            <div style="grid-column:1 / -1"><strong>Expected Shortfall (95%)</strong><br><span class="muted">BTC –9%, ETH –5%, SPY –2%</span></div>
+          </div>
+        </div>
+      </div>
+
+        <div class="callout" id="narrativeBox">Choose a preset or add assets to generate an insight.</div>
+        <div class="bar" style="margin-top:8px"><span id="riskBar" style="width:0%"></span></div>
+        <div class="note" style="margin-top:6px">Risk driver: <span id="riskDriver">—</span></div>
+      </div>
+
+      <!-- What-if Scenarios -->
+      <div class="minicard">
+        <h4 style="margin:0 0 8px">Dynamic Scenarios</h4>
+        <div class="sim-ctrls">
+          <div>
+            <label>Equity Shock (%)</label>
+            <input class="slider" id="eqShock" type="range" min="-20" max="20" value="5" />
+          </div>
+          <div>
+            <label>Crypto Shock (%)</label>
+            <input class="slider" id="crShock" type="range" min="-30" max="30" value="-8" />
+          </div>
+          <div>
+            <label>Rates ↑ (bps)</label>
+            <input class="slider" id="rtShock" type="range" min="-150" max="150" value="50" />
+          </div>
+        </div>
+        <svg class="svgbox" id="scenarioChart" role="img" aria-label="Scenario comparison"></svg>
+      </div>
+
+      <!-- Attribution -->
+      <div class="minicard">
+        <h4 style="margin:0 0 8px">Attribution & Factors</h4>
+        <svg class="svgbox" id="attribChart" role="img" aria-label="Attribution bars"></svg>
+        <div class="note">Shows contribution by Equity / Bonds / Commodities / Crypto.</div>
+      </div>
+    </div>
+
+    <div class="mini" style="margin-top:12px">
+      <!-- Benchmark Comparison -->
+      <div class="minicard">
+        <h4 style="margin:0 0 8px">Benchmark Comparison</h4>
+        <svg class="svgbox" id="benchChart" role="img" aria-label="Portfolio vs Equal‑Weight vs 60/40"></svg>
+        <div class="note">Shows simulated annualized return for Portfolio, Equal‑Weight, and 60/40.</div>
+      </div>
+
+      <!-- Rolling Beta (simulated) -->
+      <div class="minicard">
+        <h4 style="margin:0 0 8px">Rolling Equity Beta</h4>
+        <svg class="svgbox" id="betaChart" role="img" aria-label="Rolling beta to SPY"></svg>
+        <div class="note">Beta ~ sensitivity to equity market; lower is defensive, higher is aggressive.</div>
+      </div>
+
+      <!-- Uncertainty Bands -->
+      <div class="minicard">
+        <h4 style="margin:0 0 8px">Uncertainty Bands</h4>
+        <svg class="svgbox" id="distChart" role="img" aria-label="Distribution with confidence bands"></svg>
+        <div class="note">Shaded bands = 68% & 95% intervals based on sample volatility.</div>
+      </div>
+
+      
+      <!-- Benchmarks, Accessibility & Export -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn" id="exportAll">Export All Data CSV</button>
+          <button class="btn ghost" id="exportPDF">Export PDF</button>
+        </div>
+      </div>
+
+
+  <footer style="margin:20px 0 10px;color:var(--muted);font-size:12px;text-align:center">
+    Static live prototype. All numbers are illustrative placeholders. No external libraries.
+  </footer>
+</div>
+
+<script>
+  // ======== SAMPLE DATABASE (150+ tickers) ========
+  const DB = [{"symbol": "AAPL", "name": "Apple Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Tech", "price": 385.46, "vol": 6.0, "ret1y": -8.0}, {"symbol": "MSFT", "name": "Microsoft Corp.", "assetClass": "Equity", "subType": "Stock", "group": "Tech", "price": 137.81, "vol": 34.5, "ret1y": 24.1}, {"symbol": "AMZN", "name": "Amazon.com Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Consumer Discretionary", "price": 535.85, "vol": 8.5, "ret1y": 3.8}, {"symbol": "GOOGL", "name": "Alphabet Inc. Class A", "assetClass": "Equity", "subType": "Stock", "group": "Tech", "price": 22.73, "vol": 13.7, "ret1y": 10.4}, {"symbol": "META", "name": "Meta Platforms Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Tech", "price": 20.79, "vol": 13.0, "ret1y": 22.0}, {"symbol": "NVDA", "name": "NVIDIA Corp.", "assetClass": "Equity", "subType": "Stock", "group": "Tech", "price": 329.24, "vol": 13.8, "ret1y": 17.1}, {"symbol": "TSLA", "name": "Tesla Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Consumer Discretionary", "price": 486.61, "vol": 5.3, "ret1y": 34.5}, {"symbol": "BRK.B", "name": "Berkshire Hathaway Inc. Class B", "assetClass": "Equity", "subType": "Stock", "group": "Financials", "price": 420.39, "vol": 18.6, "ret1y": -17.6}, {"symbol": "JPM", "name": "JPMorgan Chase & Co.", "assetClass": "Equity", "subType": "Stock", "group": "Financials", "price": 574.54, "vol": 18.5, "ret1y": -22.6}, {"symbol": "V", "name": "Visa Inc. Class A", "assetClass": "Equity", "subType": "Stock", "group": "Financials", "price": 62.55, "vol": 38.9, "ret1y": 18.3}, {"symbol": "MA", "name": "Mastercard Inc. Class A", "assetClass": "Equity", "subType": "Stock", "group": "Financials", "price": 485.24, "vol": 34.2, "ret1y": 12.9}, {"symbol": "PG", "name": "Procter & Gamble Co.", "assetClass": "Equity", "subType": "Stock", "group": "Consumer Staples", "price": 584.0, "vol": 20.1, "ret1y": 14.2}, {"symbol": "JNJ", "name": "Johnson & Johnson", "assetClass": "Equity", "subType": "Stock", "group": "Health Care", "price": 498.5, "vol": 29.7, "ret1y": 38.9}, {"symbol": "XOM", "name": "Exxon Mobil Corp.", "assetClass": "Equity", "subType": "Stock", "group": "Energy", "price": 348.52, "vol": 33.2, "ret1y": -26.3}, {"symbol": "UNH", "name": "UnitedHealth Group Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Health Care", "price": 140.6, "vol": 16.6, "ret1y": -23.6}, {"symbol": "HD", "name": "Home Depot Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Consumer Discretionary", "price": 143.51, "vol": 9.0, "ret1y": -7.8}, {"symbol": "PFE", "name": "Pfizer Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Health Care", "price": 383.23, "vol": 19.6, "ret1y": -0.4}, {"symbol": "BAC", "name": "Bank of America Corp.", "assetClass": "Equity", "subType": "Stock", "group": "Financials", "price": 129.66, "vol": 15.7, "ret1y": 44.9}, {"symbol": "DIS", "name": "Walt Disney Co.", "assetClass": "Equity", "subType": "Stock", "group": "Communication Services", "price": 390.58, "vol": 29.4, "ret1y": -16.3}, {"symbol": "KO", "name": "Coca-Cola Co.", "assetClass": "Equity", "subType": "Stock", "group": "Consumer Staples", "price": 438.83, "vol": 11.5, "ret1y": 0.4}, {"symbol": "NFLX", "name": "Netflix Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Communication Services", "price": 593.77, "vol": 30.6, "ret1y": 14.6}, {"symbol": "TSM", "name": "Taiwan Semiconductor ADR", "assetClass": "Equity", "subType": "Stock", "group": "Tech", "price": 412.35, "vol": 38.7, "ret1y": 32.1}, {"symbol": "NKE", "name": "Nike Inc. Class B", "assetClass": "Equity", "subType": "Stock", "group": "Consumer Discretionary", "price": 141.28, "vol": 6.3, "ret1y": -4.8}, {"symbol": "ASML", "name": "ASML Holding NV", "assetClass": "Equity", "subType": "Stock", "group": "Tech", "price": 164.31, "vol": 13.4, "ret1y": 45.4}, {"symbol": "ADBE", "name": "Adobe Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Tech", "price": 526.44, "vol": 17.6, "ret1y": 22.4}, {"symbol": "ORCL", "name": "Oracle Corp.", "assetClass": "Equity", "subType": "Stock", "group": "Tech", "price": 240.4, "vol": 41.6, "ret1y": 6.7}, {"symbol": "INTC", "name": "Intel Corp.", "assetClass": "Equity", "subType": "Stock", "group": "Tech", "price": 162.6, "vol": 14.9, "ret1y": 14.9}, {"symbol": "CSCO", "name": "Cisco Systems Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Tech", "price": 161.33, "vol": 28.4, "ret1y": 41.8}, {"symbol": "PEP", "name": "PepsiCo Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Consumer Staples", "price": 242.64, "vol": 13.8, "ret1y": 49.8}, {"symbol": "AVGO", "name": "Broadcom Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Tech", "price": 308.17, "vol": 8.6, "ret1y": -26.2}, {"symbol": "AMD", "name": "Advanced Micro Devices Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Tech", "price": 70.24, "vol": 30.1, "ret1y": 33.4}, {"symbol": "CRM", "name": "Salesforce Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Tech", "price": 256.19, "vol": 7.5, "ret1y": 0.5}, {"symbol": "T", "name": "AT&T Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Communication Services", "price": 597.69, "vol": 26.2, "ret1y": 47.7}, {"symbol": "VZ", "name": "Verizon Communications Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Communication Services", "price": 517.16, "vol": 5.5, "ret1y": 27.7}, {"symbol": "BABA", "name": "Alibaba Group ADR", "assetClass": "Equity", "subType": "Stock", "group": "Consumer Discretionary", "price": 410.62, "vol": 26.5, "ret1y": -8.7}, {"symbol": "WMT", "name": "Walmart Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Consumer Staples", "price": 386.37, "vol": 9.5, "ret1y": 4.8}, {"symbol": "BP", "name": "BP plc ADR", "assetClass": "Equity", "subType": "Stock", "group": "Energy", "price": 274.97, "vol": 43.2, "ret1y": 40.1}, {"symbol": "RIO", "name": "Rio Tinto plc ADR", "assetClass": "Equity", "subType": "Stock", "group": "Materials", "price": 161.72, "vol": 25.0, "ret1y": -15.7}, {"symbol": "SHOP", "name": "Shopify Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Tech", "price": 548.01, "vol": 39.8, "ret1y": -6.1}, {"symbol": "SQ", "name": "Block Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Tech", "price": 385.17, "vol": 29.4, "ret1y": -17.8}, {"symbol": "UBER", "name": "Uber Technologies Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Tech", "price": 458.69, "vol": 26.6, "ret1y": 32.3}, {"symbol": "PYPL", "name": "PayPal Holdings Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Tech", "price": 320.56, "vol": 5.0, "ret1y": -4.1}, {"symbol": "BA", "name": "Boeing Co.", "assetClass": "Equity", "subType": "Stock", "group": "Industrials", "price": 16.59, "vol": 42.2, "ret1y": 40.3}, {"symbol": "CAT", "name": "Caterpillar Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Industrials", "price": 499.84, "vol": 17.3, "ret1y": -25.4}, {"symbol": "GS", "name": "Goldman Sachs Group Inc.", "assetClass": "Equity", "subType": "Stock", "group": "Financials", "price": 527.42, "vol": 42.9, "ret1y": -23.1}, {"symbol": "SBUX", "name": "Starbucks Corp.", "assetClass": "Equity", "subType": "Stock", "group": "Consumer Discretionary", "price": 294.16, "vol": 7.8, "ret1y": 30.8}, {"symbol": "MCD", "name": "McDonald's Corp.", "assetClass": "Equity", "subType": "Stock", "group": "Consumer Discretionary", "price": 460.67, "vol": 10.1, "ret1y": 8.0}, {"symbol": "COST", "name": "Costco Wholesale Corp.", "assetClass": "Equity", "subType": "Stock", "group": "Consumer Staples", "price": 332.13, "vol": 15.6, "ret1y": 39.8}, {"symbol": "ASX", "name": "ASX Ltd.", "assetClass": "Equity", "subType": "Stock", "group": "Financials", "price": 256.77, "vol": 13.5, "ret1y": 13.1}, {"symbol": "SPY", "name": "SPDR S&P 500 ETF", "assetClass": "ETF", "subType": "Equity ETF", "group": "Broad Market", "price": 439.31, "vol": 13.0, "ret1y": -5.1}, {"symbol": "QQQ", "name": "Invesco QQQ Trust", "assetClass": "ETF", "subType": "Equity ETF", "group": "Tech-heavy", "price": 597.11, "vol": 31.0, "ret1y": 5.0}, {"symbol": "VTI", "name": "Vanguard Total Stock Market ETF", "assetClass": "ETF", "subType": "Equity ETF", "group": "Broad Market", "price": 312.96, "vol": 9.8, "ret1y": -12.0}, {"symbol": "IWM", "name": "iShares Russell 2000 ETF", "assetClass": "ETF", "subType": "Equity ETF", "group": "Small Cap", "price": 206.16, "vol": 28.5, "ret1y": -11.6}, {"symbol": "EEM", "name": "iShares MSCI Emerging Markets ETF", "assetClass": "ETF", "subType": "Equity ETF", "group": "Emerging", "price": 136.03, "vol": 7.8, "ret1y": 20.5}, {"symbol": "EFA", "name": "iShares MSCI EAFE ETF", "assetClass": "ETF", "subType": "Equity ETF", "group": "Developed ex-US", "price": 141.22, "vol": 41.2, "ret1y": 38.8}, {"symbol": "TLT", "name": "iShares 20+ Year Treasury Bond ETF", "assetClass": "ETF", "subType": "Bond ETF", "group": "Treasury Long", "price": 47.16, "vol": 14.5, "ret1y": 23.5}, {"symbol": "IEF", "name": "iShares 7-10 Year Treasury Bond ETF", "assetClass": "ETF", "subType": "Bond ETF", "group": "Treasury Int", "price": 132.47, "vol": 10.3, "ret1y": 44.8}, {"symbol": "LQD", "name": "iShares iBoxx $ Inv Grade Corporate Bond ETF", "assetClass": "ETF", "subType": "Bond ETF", "group": "IG Credit", "price": 344.77, "vol": 23.9, "ret1y": 32.8}, {"symbol": "HYG", "name": "iShares iBoxx $ High Yield Corporate Bond ETF", "assetClass": "ETF", "subType": "Bond ETF", "group": "High Yield", "price": 485.46, "vol": 12.6, "ret1y": -22.2}, {"symbol": "BND", "name": "Vanguard Total Bond Market ETF", "assetClass": "ETF", "subType": "Bond ETF", "group": "Aggregate", "price": 261.48, "vol": 21.9, "ret1y": 7.4}, {"symbol": "AGG", "name": "iShares Core U.S. Aggregate Bond ETF", "assetClass": "ETF", "subType": "Bond ETF", "group": "Aggregate", "price": 438.8, "vol": 31.9, "ret1y": 48.7}, {"symbol": "GLD", "name": "SPDR Gold Trust", "assetClass": "ETF", "subType": "Commodity ETF", "group": "Gold", "price": 63.56, "vol": 21.1, "ret1y": -2.9}, {"symbol": "SLV", "name": "iShares Silver Trust", "assetClass": "ETF", "subType": "Commodity ETF", "group": "Silver", "price": 517.7, "vol": 14.9, "ret1y": -14.8}, {"symbol": "DBC", "name": "Invesco DB Commodity Index Tracking Fund", "assetClass": "ETF", "subType": "Commodity ETF", "group": "Broad Cmdty", "price": 271.93, "vol": 21.9, "ret1y": -7.7}, {"symbol": "USO", "name": "United States Oil Fund", "assetClass": "ETF", "subType": "Commodity ETF", "group": "Oil", "price": 153.63, "vol": 41.9, "ret1y": 5.5}, {"symbol": "UNG", "name": "United States Natural Gas Fund", "assetClass": "ETF", "subType": "Commodity ETF", "group": "Natural Gas", "price": 517.5, "vol": 27.0, "ret1y": -26.0}, {"symbol": "VNQ", "name": "Vanguard Real Estate ETF", "assetClass": "ETF", "subType": "REIT ETF", "group": "Real Estate", "price": 599.57, "vol": 38.4, "ret1y": 47.5}, {"symbol": "XLF", "name": "Financial Select Sector SPDR", "assetClass": "ETF", "subType": "Equity ETF", "group": "Sector Financials", "price": 556.19, "vol": 38.9, "ret1y": -16.7}, {"symbol": "XLK", "name": "Technology Select Sector SPDR", "assetClass": "ETF", "subType": "Equity ETF", "group": "Sector Technology", "price": 293.96, "vol": 13.5, "ret1y": 2.1}, {"symbol": "XLE", "name": "Energy Select Sector SPDR", "assetClass": "ETF", "subType": "Equity ETF", "group": "Sector Energy", "price": 39.89, "vol": 20.2, "ret1y": 48.8}, {"symbol": "XLY", "name": "Consumer Discretionary Select Sector SPDR", "assetClass": "ETF", "subType": "Equity ETF", "group": "Sector ConsDisc", "price": 162.8, "vol": 36.4, "ret1y": 6.4}, {"symbol": "XLI", "name": "Industrial Select Sector SPDR", "assetClass": "ETF", "subType": "Equity ETF", "group": "Sector Industrials", "price": 256.69, "vol": 43.3, "ret1y": 49.6}, {"symbol": "XLP", "name": "Consumer Staples Select Sector SPDR", "assetClass": "ETF", "subType": "Equity ETF", "group": "Sector ConsStaples", "price": 335.68, "vol": 33.7, "ret1y": -17.6}, {"symbol": "XLV", "name": "Health Care Select Sector SPDR", "assetClass": "ETF", "subType": "Equity ETF", "group": "Sector HealthCare", "price": 181.54, "vol": 43.7, "ret1y": 16.3}, {"symbol": "XLB", "name": "Materials Select Sector SPDR", "assetClass": "ETF", "subType": "Equity ETF", "group": "Sector Materials", "price": 327.61, "vol": 34.9, "ret1y": -25.4}, {"symbol": "XLU", "name": "Utilities Select Sector SPDR", "assetClass": "ETF", "subType": "Equity ETF", "group": "Sector Utilities", "price": 352.59, "vol": 25.1, "ret1y": 38.2}, {"symbol": "PPLT", "name": "Aberdeen Platinum ETF", "assetClass": "ETF", "subType": "Commodity ETF", "group": "Platinum", "price": 98.67, "vol": 43.4, "ret1y": -23.6}, {"symbol": "PALL", "name": "Aberdeen Palladium ETF", "assetClass": "ETF", "subType": "Commodity ETF", "group": "Palladium", "price": 115.57, "vol": 28.8, "ret1y": 24.0}, {"symbol": "CPER", "name": "United States Copper Index Fund", "assetClass": "ETF", "subType": "Commodity ETF", "group": "Copper", "price": 144.95, "vol": 9.8, "ret1y": 41.2}, {"symbol": "SOYB", "name": "Teucrium Soybean Fund", "assetClass": "ETF", "subType": "Commodity ETF", "group": "Soybean", "price": 151.5, "vol": 28.8, "ret1y": 19.6}, {"symbol": "CORN", "name": "Teucrium Corn Fund", "assetClass": "ETF", "subType": "Commodity ETF", "group": "Corn", "price": 254.44, "vol": 28.3, "ret1y": 11.8}, {"symbol": "WEAT", "name": "Teucrium Wheat Fund", "assetClass": "ETF", "subType": "Commodity ETF", "group": "Wheat", "price": 561.15, "vol": 13.2, "ret1y": 27.3}, {"symbol": "DBA", "name": "Invesco DB Agriculture Fund", "assetClass": "ETF", "subType": "Commodity ETF", "group": "Agriculture", "price": 147.02, "vol": 20.8, "ret1y": 23.7}, {"symbol": "BTC", "name": "Bitcoin", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 19499.82, "vol": 65.3, "ret1y": 120.4}, {"symbol": "ETH", "name": "Ethereum", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 4715.31, "vol": 76.7, "ret1y": 179.6}, {"symbol": "BNB", "name": "BNB", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 64746.27, "vol": 45.9, "ret1y": -8.8}, {"symbol": "XRP", "name": "XRP", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 17238.03, "vol": 114.7, "ret1y": 151.4}, {"symbol": "ADA", "name": "Cardano", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 57152.57, "vol": 69.6, "ret1y": -22.1}, {"symbol": "SOL", "name": "Solana", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 54193.42, "vol": 96.3, "ret1y": 86.8}, {"symbol": "DOGE", "name": "Dogecoin", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 64170.15, "vol": 92.3, "ret1y": -58.1}, {"symbol": "TRX", "name": "TRON", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 53111.77, "vol": 64.0, "ret1y": 99.2}, {"symbol": "AVAX", "name": "Avalanche", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 61030.45, "vol": 50.7, "ret1y": -32.3}, {"symbol": "DOT", "name": "Polkadot", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 6957.35, "vol": 84.3, "ret1y": 5.4}, {"symbol": "MATIC", "name": "Polygon", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 39313.94, "vol": 97.4, "ret1y": -11.1}, {"symbol": "LINK", "name": "Chainlink", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 41225.47, "vol": 61.1, "ret1y": 57.2}, {"symbol": "LTC", "name": "Litecoin", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 58846.87, "vol": 107.7, "ret1y": -37.8}, {"symbol": "ATOM", "name": "Cosmos", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 27532.43, "vol": 62.1, "ret1y": -59.1}, {"symbol": "XMR", "name": "Monero", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 50122.75, "vol": 91.0, "ret1y": 2.9}, {"symbol": "ETC", "name": "Ethereum Classic", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 48180.01, "vol": 84.1, "ret1y": 42.6}, {"symbol": "FIL", "name": "Filecoin", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 628.54, "vol": 46.0, "ret1y": 151.9}, {"symbol": "ICP", "name": "Internet Computer", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 58755.36, "vol": 83.6, "ret1y": 140.3}, {"symbol": "APT", "name": "Aptos", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 37863.13, "vol": 51.8, "ret1y": -29.4}, {"symbol": "ARB", "name": "Arbitrum", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 20036.8, "vol": 111.9, "ret1y": 131.1}, {"symbol": "OP", "name": "Optimism", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 55945.67, "vol": 111.9, "ret1y": -9.6}, {"symbol": "NEAR", "name": "NEAR Protocol", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 16219.44, "vol": 48.2, "ret1y": 127.2}, {"symbol": "ALGO", "name": "Algorand", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 57468.76, "vol": 72.5, "ret1y": 89.0}, {"symbol": "BCH", "name": "Bitcoin Cash", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 10045.98, "vol": 114.4, "ret1y": 147.5}, {"symbol": "HBAR", "name": "Hedera", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 63453.39, "vol": 104.9, "ret1y": 151.5}, {"symbol": "SAND", "name": "The Sandbox", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 1611.12, "vol": 98.9, "ret1y": 19.7}, {"symbol": "MANA", "name": "Decentraland", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 60503.03, "vol": 104.2, "ret1y": 147.4}, {"symbol": "AAVE", "name": "Aave", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 52698.71, "vol": 61.3, "ret1y": 129.0}, {"symbol": "UNI", "name": "Uniswap", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 7026.22, "vol": 109.8, "ret1y": 146.1}, {"symbol": "DYDX", "name": "dYdX", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 14458.2, "vol": 105.3, "ret1y": 50.5}, {"symbol": "TIA", "name": "Celestia", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 19837.41, "vol": 103.6, "ret1y": -5.4}, {"symbol": "RNDR", "name": "Render", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 1538.2, "vol": 55.5, "ret1y": 18.8}, {"symbol": "KAS", "name": "Kaspa", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 56182.94, "vol": 117.4, "ret1y": 7.0}, {"symbol": "GRT", "name": "The Graph", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 41696.32, "vol": 72.0, "ret1y": 175.5}, {"symbol": "INJ", "name": "Injective", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 34854.03, "vol": 115.1, "ret1y": -32.3}, {"symbol": "STX", "name": "Stacks", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 63076.04, "vol": 54.3, "ret1y": 171.0}, {"symbol": "ROSE", "name": "Oasis Network", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 17255.32, "vol": 48.7, "ret1y": 44.3}, {"symbol": "FLOW", "name": "Flow", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 47355.43, "vol": 65.1, "ret1y": 85.5}, {"symbol": "RUNE", "name": "THORChain", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 33242.5, "vol": 70.8, "ret1y": 78.4}, {"symbol": "FTM", "name": "Fantom", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 16556.97, "vol": 96.7, "ret1y": -59.6}, {"symbol": "IMX", "name": "Immutable X", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 60162.39, "vol": 83.1, "ret1y": 112.7}, {"symbol": "SEI", "name": "Sei", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 48226.76, "vol": 93.7, "ret1y": 27.4}, {"symbol": "WIF", "name": "dogwifhat", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 4548.31, "vol": 93.1, "ret1y": 19.2}, {"symbol": "BONK", "name": "Bonk", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 20404.52, "vol": 107.8, "ret1y": 112.7}, {"symbol": "PEPE", "name": "Pepe", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 19520.95, "vol": 64.7, "ret1y": 38.0}, {"symbol": "JTO", "name": "Jito", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 26156.03, "vol": 63.7, "ret1y": -29.5}, {"symbol": "XLM", "name": "Stellar", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 27329.02, "vol": 115.2, "ret1y": 102.6}, {"symbol": "EGLD", "name": "MultiversX", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 58682.36, "vol": 89.2, "ret1y": 12.2}, {"symbol": "QNT", "name": "Quant", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 35615.92, "vol": 40.0, "ret1y": 8.9}, {"symbol": "SUI", "name": "Sui", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 27942.74, "vol": 86.4, "ret1y": 97.1}, {"symbol": "TIA2", "name": "Celestia-Alt", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 30224.24, "vol": 75.4, "ret1y": -8.7}, {"symbol": "AR", "name": "Arweave", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 30757.11, "vol": 112.1, "ret1y": 131.0}, {"symbol": "KSM", "name": "Kusama", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 11029.95, "vol": 46.8, "ret1y": 63.7}, {"symbol": "CRO", "name": "Cronos", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 41141.16, "vol": 66.8, "ret1y": 136.4}, {"symbol": "MINA", "name": "Mina", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 48823.98, "vol": 93.8, "ret1y": -6.1}, {"symbol": "PYTH", "name": "Pyth Network", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 12943.45, "vol": 42.0, "ret1y": -1.2}, {"symbol": "POL", "name": "Polygon PoS (POL)", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 30883.87, "vol": 108.0, "ret1y": -42.5}, {"symbol": "SKL", "name": "SKALE", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 26938.67, "vol": 90.4, "ret1y": -13.3}, {"symbol": "ANKR", "name": "Ankr", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 45263.03, "vol": 79.6, "ret1y": -1.4}, {"symbol": "CHR", "name": "Chromia", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 42643.77, "vol": 40.4, "ret1y": 120.2}, {"symbol": "XRD", "name": "Radix", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 50053.0, "vol": 48.5, "ret1y": 42.0}, {"symbol": "ZIL", "name": "Zilliqa", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 11432.64, "vol": 116.6, "ret1y": 64.3}, {"symbol": "IOTA", "name": "IOTA", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 3264.2, "vol": 59.9, "ret1y": 143.6}, {"symbol": "ONE", "name": "Harmony", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 29670.02, "vol": 104.1, "ret1y": 100.2}, {"symbol": "XTZ", "name": "Tezos", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 64213.01, "vol": 87.6, "ret1y": 168.0}, {"symbol": "HNT", "name": "Helium", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 57942.69, "vol": 89.0, "ret1y": 112.6}, {"symbol": "NEXO", "name": "Nexo", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 32810.59, "vol": 106.4, "ret1y": 71.5}, {"symbol": "KLAY", "name": "Klaytn", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 58318.53, "vol": 99.5, "ret1y": 53.9}, {"symbol": "ENJ", "name": "Enjin", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 16847.46, "vol": 59.8, "ret1y": 93.0}, {"symbol": "OKB", "name": "OKB", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 49777.89, "vol": 81.7, "ret1y": 90.4}, {"symbol": "ARK", "name": "Ark", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 17848.84, "vol": 46.2, "ret1y": 8.6}, {"symbol": "DASH", "name": "Dash", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 17661.49, "vol": 65.6, "ret1y": 69.6}, {"symbol": "ZEC", "name": "Zcash", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 8994.32, "vol": 58.5, "ret1y": 106.5}, {"symbol": "CFX", "name": "Conflux", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 45917.25, "vol": 45.1, "ret1y": 37.8}, {"symbol": "OM", "name": "MANTRA", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 35269.73, "vol": 73.3, "ret1y": -10.4}, {"symbol": "ORDI", "name": "ORDI", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 27309.33, "vol": 112.4, "ret1y": 80.2}, {"symbol": "JASMY", "name": "Jasmy", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 45209.0, "vol": 108.5, "ret1y": 123.7}, {"symbol": "FRAX", "name": "Frax", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 24724.77, "vol": 40.5, "ret1y": 24.4}, {"symbol": "LDO", "name": "Lido DAO", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 48975.89, "vol": 108.3, "ret1y": 168.8}, {"symbol": "GMX", "name": "GMX", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 27236.39, "vol": 99.8, "ret1y": 71.1}, {"symbol": "SFP", "name": "SafePal", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 39211.42, "vol": 57.6, "ret1y": -7.3}, {"symbol": "GALA", "name": "Gala", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 28329.34, "vol": 42.3, "ret1y": 20.7}, {"symbol": "CHZ", "name": "Chiliz", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 44144.23, "vol": 72.3, "ret1y": -20.4}, {"symbol": "APE", "name": "ApeCoin", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 30380.37, "vol": 50.2, "ret1y": 89.3}, {"symbol": "PENDLE", "name": "Pendle", "assetClass": "Crypto", "subType": "Crypto", "group": "Digital Asset", "price": 1752.83, "vol": 71.5, "ret1y": 75.5}];
+
+  const DB_MAP = new Map(DB.map(d => [d.symbol.toUpperCase(), d]));
+
+  // Populate datalist suggestions
+  const symList = document.getElementById('symList');
+  const assetCount = document.getElementById('asset-count');
+  assetCount.textContent = DB.length + " assets";
+  DB.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d.symbol;
+    opt.label = d.name + " — " + d.assetClass + (d.subType ? " / " + d.subType : "");
+    symList.appendChild(opt);
+  });
+
+  // Fuzzy suggestion (Levenshtein distance)
+  function lev(a,b){const m=[];for(let i=0;i<=b.length;i++)m[i]=[i];for(let j=0;j<=a.length;j++)m[0][j]=j;for(let i=1;i<=b.length;i++)for(let j=1;j<=a.length;j++)m[i][j]=b.charAt(i-1)==a.charAt(j-1)?m[i-1][j-1]:Math.min(m[i-1][j-1]+1,m[i][j-1]+1,m[i-1][j]+1);return m[b.length][a.length];}
+  const symbolInput = document.getElementById('symbol');
+  symbolInput.addEventListener('input', () => {
+    const q = symbolInput.value.trim().toUpperCase();
+    if(!q) return;
+    const ranked = DB
+      .map(d => {return {sym:d.symbol, score: lev(q, d.symbol.toUpperCase())};})
+      .sort((a,b)=>a.score-b.score)
+      .slice(0,5);
+    symbolInput.setAttribute('title', "Suggestions: " + ranked.map(r=>r.sym).join(', '));
+  });
+
+  // Portfolio state
+  const holdingsTBody = document.getElementById('holdings');
+  const totalValEl = document.getElementById('totalVal');
+  let portfolio = []; // {symbol, units, price, name, assetClass, subType}
+
+  function formatMoney(x){return '$' + x.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}
+
+  function recalc(){
+    const total = portfolio.reduce((s,h)=>s + h.units * h.price, 0);
+    totalValEl.textContent = formatMoney(total);
+    drawKPIs();
+    drawTreemap();
+    drawCorr();
+    drawLine();
+    drawRebal();
+    drawNarrative();
+    drawScenario();
+    drawAttrib();
+    drawDist();
+  }
+
+  function addHolding(sym, units){
+    sym = (sym||'').toUpperCase();
+    if(!DB_MAP.has(sym)){alert('Symbol not found in local DB.');return;}
+    const d = DB_MAP.get(sym);
+    const exists = portfolio.find(h=>h.symbol===sym);
+    if(exists){exists.units += units;}
+    else{
+      portfolio.push({symbol:d.symbol,name:d.name,units:units,price:d.price,assetClass:d.assetClass,subType:d.subType,group:d.group,vol:d.vol,ret1y:d.ret1y});
+    }
+    renderHoldings();
+    recalc();
+  }
+
+  function removeHolding(sym){
+    portfolio = portfolio.filter(h=>h.symbol!==sym);
+    renderHoldings(); recalc();
+  }
+
+  function renderHoldings(){
+    holdingsTBody.innerHTML='';
+    portfolio.forEach(h=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML = `<td>${h.symbol}</td><td>${h.name}</td><td>${h.units}</td><td>${formatMoney(h.price)}</td><td>${formatMoney(h.units*h.price)}</td>
+        <td><button class="btn ghost" onclick="removeHolding('${h.symbol}')">Remove</button></td>`;
+      holdingsTBody.appendChild(tr);
+    });
+  }
+
+  // Add & Clear
+  document.getElementById('addBtn').onclick = () => {
+    const sym = document.getElementById('symbol').value;
+    const units = parseFloat(document.getElementById('units').value || '0');
+    if(!sym || units<=0) return alert('Enter a valid symbol and units.');
+    addHolding(sym, units);
+  };
+  document.getElementById('clearBtn').onclick = () => { portfolio = []; renderHoldings(); recalc(); };
+
+  // Presets
+  const presets = {
+    balanced: [ ['SPY',20],['TLT',20],['GLD',10],['BTC',40],['ETH',10] ],
+    growth:   [ ['SPY',30],['QQQ',30],['NVDA',10],['BTC',30] ],
+    defensive:[ ['TLT',40],['IEF',20],['GLD',20],['XLU',20] ]
+  };
+  document.querySelectorAll('[data-preset]').forEach(btn=>{
+    btn.onclick=()=>{
+      portfolio = [];
+      presets[btn.dataset.preset].forEach(([s,w])=>{
+        // choose units so weight ~ w using price approximation
+        const d = DB_MAP.get(s);
+        const total = 100000; // demo
+        const targetVal = total*w/100;
+        const units = Math.max(1, Math.round(targetVal / d.price));
+        addHolding(s, units);
+      });
+      renderHoldings(); recalc();
+    }
+  });
+
+  // CSV Export
+  function download(filename, text){
+    const blob = new Blob([text], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  }
+  document.getElementById('exportBtn').onclick = () => {
+    const rows = ['symbol,name,units,price,value'];
+    portfolio.forEach(h=>rows.push([h.symbol, '"'+h.name+'"', h.units, h.price, (h.units*h.price).toFixed(2)].join(',')));
+    download('portfolio.csv', rows.join('\n'));
+  };
+  document.getElementById('exportAll').onclick = () => {
+    const rows = ['symbol,name,assetClass,subType,group,price,vol,ret1y'];
+    DB.forEach(d=>rows.push([d.symbol, '"'+d.name+'"', d.assetClass, d.subType, d.group, d.price, d.vol, d.ret1y].join(',')));
+    download('reference_db.csv', rows.join('\n'));
+  };
+
+  // ======= KPI calculations =======
+  function weights(){
+    const total = portfolio.reduce((s,h)=>s + h.units*h.price, 0) || 1;
+    return portfolio.map(h=>({symbol:h.symbol, w:(h.units*h.price)/total, vol:h.vol, ret:h.ret1y, assetClass:h.assetClass}));
+  }
+  function drawKPIs(){
+    const w = weights();
+    const ret = w.reduce((s,x)=>s + (x.ret/100)*x.w, 0);
+    const vol = Math.sqrt(w.reduce((s,x)=>s + Math.pow((x.vol/100)*x.w,2), 0)); // naive
+    const rf = 0.02; // 2%
+    const sharpe = (ret - rf) / (vol||1);
+    // 1-day VaR (95%) from annual vol (assume 252 days)
+    const dayVol = vol/Math.sqrt(252);
+    const var95 = 1.65*dayVol;
+    const es95  = 2.06*dayVol;
+    document.getElementById('kpi-ret').textContent = (ret*100).toFixed(1)+'%';
+    document.getElementById('kpi-vol').textContent = (vol*100).toFixed(1)+'%';
+    document.getElementById('kpi-sharpe').textContent = sharpe.toFixed(2);
+    document.getElementById('kpi-var').textContent = (var95*100).toFixed(1)+'% / '+(es95*100).toFixed(1)+'%';
+  }
+
+  // ======= Treemap (simple grid blocks proportional to risk cont.) =======
+  function drawTreemap(){
+    const el = document.getElementById('treemap');
+    el.innerHTML='';
+    const w = weights();
+    w.sort((a,b)=> (b.w*b.vol) - (a.w*a.vol));
+    const mapClass = (sym)=>{ const ac = (DB_MAP.get(sym)||{}).assetClass; return ac==='Crypto'?'r':(ac==='Equity'?'g':'y'); };
+    w.forEach(x=>{
+      const area = 1 + Math.round(8 * (x.w*x.vol) / ( (w[0]||{w:1,vol:1}).w*(w[0]||{w:1,vol:1}).vol || 1 ));
+      const div = document.createElement('div');
+      div.className = 'block '+mapClass(x.symbol);
+      div.style.gridColumn = 'span '+Math.max(1, Math.min(8, area));
+      div.style.gridRow    = 'span '+Math.max(1, Math.min(4, Math.round(area/2)));
+      div.title = x.symbol + ' · weight ' + (x.w*100).toFixed(1) + '% · risk ' + (x.vol).toFixed(1) + '%';
+      el.appendChild(div);
+    });
+  }
+
+  // ======= Correlation Heatmap (heuristic by asset class) =======
+  function corrPair(a,b){
+    if(a===b) return 1.0;
+    const A = (DB_MAP.get(a)||{}).assetClass;
+    const B = (DB_MAP.get(b)||{}).assetClass;
+    if(A==='Equity' && B==='Equity') return 0.8;
+    if((A==='Equity'&&B==='ETF')||(A==='ETF'&&B==='Equity')) return 0.6;
+    if(A==='ETF' && B==='ETF') return 0.7;
+    if((A==='Equity'&&B==='Bond')||(A==='Bond'&&B==='Equity')) return -0.3;
+    if((A==='ETF'||A==='Equity') && B==='Crypto') return 0.2;
+    if(A==='Crypto' && B==='Crypto') return 0.7;
+    if((A==='Commodity'||B==='Commodity')) return 0.1;
+    return 0.0;
+  }
+  function drawCorr(){
+    const syms = portfolio.map(h=>h.symbol).slice(0,6); // limit to 6 for readability
+    const head = document.getElementById('corr-head');
+    const body = document.getElementById('corr-body');
+    head.innerHTML = '<th></th>' + syms.map(s=>'<th>'+s+'</th>').join('');
+    body.innerHTML = '';
+    syms.forEach(r=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<th>'+r+'</th>' + syms.map(c=>{
+        const v = corrPair(r,c);
+        const cls = v>0.3?'pos':(v<-0.1?'neg':'neu');
+        return '<td class="hm '+cls+'">'+v.toFixed(2)+'</td>';
+      }).join('');
+      body.appendChild(tr);
+    });
+  }
+
+  // ======= Simple Line Chart (SVG) =======
+  function drawLine(){
+    const svg = document.getElementById('lineChart');
+    const W = svg.clientWidth || 560, H = svg.clientHeight || 260;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    // Fake path: start at 100, random walk influenced by portfolio vol
+    const vol = (weights().reduce((s,x)=>s + x.vol*x.w,0) || 10)/100;
+    let y = 100;
+    const pts = [];
+    for(let i=0;i<80;i++){ y *= (1 + (Math.random()-0.5)*vol*0.2); pts.push([i, y]); }
+    const xs = pts.map(p=>p[0]), ys = pts.map(p=>p[1]);
+    const xScale = x=> 20 + x*(W-40)/80;
+    const yMin = Math.min(...ys), yMax = Math.max(...ys);
+    const yScale = y=> H-20 - (y - yMin)*(H-40)/(yMax-yMin||1);
+    const d = pts.map((p,i)=> (i? 'L':'M') + xScale(p[0])+','+yScale(p[1])).join(' ');
+    svg.innerHTML = `<path d="${d}" fill="none" stroke="${getComputedStyle(document.documentElement).getPropertyValue('--brand')}" stroke-width="2"/>`;
+  }
+
+  // ======= Rebalancing table (to target equal-weight) =======
+  function drawRebal(){
+    const tbody = document.getElementById('rebal');
+    tbody.innerHTML = '';
+    const n = Math.max(1, portfolio.length);
+    const target = 100/n;
+    const total = portfolio.reduce((s,h)=>s+h.units*h.price,0)||1;
+    portfolio.forEach(h=>{
+      const cur = (h.units*h.price)/total*100;
+      const diff = cur - target;
+      const action = Math.abs(diff) < 2 ? 'Hold' : (diff>0?'Sell '+Math.abs(diff).toFixed(1)+'%':'Buy '+Math.abs(diff).toFixed(1)+'%');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${h.symbol}</td><td>${cur.toFixed(1)}%</td><td>${target.toFixed(1)}%</td><td>${(diff>0?'+':'')}${diff.toFixed(1)}%</td><td>${action}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ======= Narrative (Explainability) =======
+  function drawNarrative(){
+    const w = weights();
+    if(!w.length){ document.getElementById('narrativeBox').textContent='Choose a preset or add assets to generate an insight.'; document.getElementById('riskBar').style.width='0%'; document.getElementById('riskDriver').textContent='—'; return; }
+    const totalCrypto = w.filter(x=>x.assetClass==='Crypto').reduce((s,x)=>s+x.w,0);
+    const totalBonds  = w.filter(x=>x.assetClass==='Bond'||x.subType==='Bond ETF').reduce((s,x)=>s+x.w,0);
+    const riskPct = Math.min(100, Math.round((w.reduce((s,x)=>s + x.w*x.vol,0))*1.2));
+    const loss$ = Math.round(12000 * (totalCrypto*1.5 + 0.5)); // illustrative
+    const text = `At current allocation, a 5% tail event implies ~ ${loss$} one‑day loss; crypto drives risk while bonds cushion volatility.`;
+    document.getElementById('narrativeBox').textContent = text;
+    document.getElementById('riskBar').style.width = riskPct+'%';
+    const driver = totalCrypto>0.25?'Crypto Exposure':'Equity Beta';
+    document.getElementById('riskDriver').textContent = driver + (totalBonds>0.2?' · Bonds hedge active':'');
+  }
+
+  // ======= Scenario (What‑If) =======
+  document.getElementById('eqShock').oninput = drawScenario;
+  document.getElementById('crShock').oninput = drawScenario;
+  document.getElementById('rtShock').oninput = drawScenario;
+  function drawScenario(){
+    const svg = document.getElementById('scenarioChart'); const W=svg.clientWidth||560,H=svg.clientHeight||260;
+    svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+    const eq = parseFloat(document.getElementById('eqShock').value);
+    const cr = parseFloat(document.getElementById('crShock').value);
+    const rt = parseFloat(document.getElementById('rtShock').value);
+    // Baseline path
+    let y0=100, y1=100;
+    const w = weights();
+    const wEq = w.filter(x=>x.assetClass==='Equity'||x.subType==='Equity ETF').reduce((s,x)=>s+x.w,0);
+    const wBd = w.filter(x=>x.subType==='Bond ETF').reduce((s,x)=>s+x.w,0);
+    const wCr = w.filter(x=>x.assetClass==='Crypto').reduce((s,x)=>s+x.w,0);
+    const pts0=[], pts1=[];
+    for(let i=0;i<60;i++){ y0 *= (1+(Math.random()-0.5)*0.01); pts0.push([i,y0]); }
+    // Scenario: apply shocks over first 10 steps
+    for(let i=0;i<60;i++){ 
+      let shock = 0;
+      if(i<10) shock = (eq/100)*wEq + (cr/100)*wCr + (-rt/10000)*wBd*8; // duration ~8
+      y1 *= (1 + (Math.random()-0.5)*0.01 + shock/10);
+      pts1.push([i,y1]);
+    }
+    function scale(pts){
+      const xs=pts.map(p=>p[0]), ys=pts.map(p=>p[1]);
+      const xScale = x=> 20 + x*(W-40)/60;
+      const yMin = Math.min(...ys), yMax = Math.max(...ys);
+      const yScale = y=> H-20 - (y - yMin)*(H-40)/(yMax-yMin||1);
+      const d = pts.map((p,i)=> (i?'L':'M') + xScale(p[0])+','+yScale(p[1])).join(' ');
+      return d;
+    }
+    svg.innerHTML = `<path d="${scale(pts0)}" fill="none" stroke="#8892b0" stroke-width="2"/>
+                     <path d="${scale(pts1)}" fill="none" stroke="${getComputedStyle(document.documentElement).getPropertyValue('--brand')}" stroke-width="2"/>`;
+  }
+
+  // ======= Attribution =======
+  function drawAttrib(){
+    const svg = document.getElementById('attribChart'); const W=svg.clientWidth||560,H=svg.clientHeight||260;
+    svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+    const w = weights();
+    const groups = [
+      ['Equity', w.filter(x=>x.assetClass==='Equity'||x.subType==='Equity ETF').reduce((s,x)=>s+x.w,0)],
+      ['Bonds',  w.filter(x=>x.subType==='Bond ETF').reduce((s,x)=>s+x.w,0)],
+      ['Cmdty',  w.filter(x=> (DB_MAP.get(x.symbol)||{}).subType==='Commodity ETF').reduce((s,x)=>s+x.w,0)],
+      ['Crypto', w.filter(x=>x.assetClass==='Crypto').reduce((s,x)=>s+x.w,0)]
+    ];
+    const barW = (W-80)/groups.length, maxH = H-60;
+    svg.innerHTML = '';
+    groups.forEach((g,i)=>{
+      const v = g[1]; const h = v*maxH;
+      const x = 40 + i*barW + 10; const y = H-30 - h;
+      const rect = `<rect x="${x}" y="${y}" width="${barW-20}" height="${h}" fill="${getComputedStyle(document.documentElement).getPropertyValue('--accent')}" />`;
+      const label = `<text x="${x+ (barW-20)/2}" y="${H-12}" fill="#cbd5e1" font-size="12" text-anchor="middle">${g[0]}</text>`;
+      const val = `<text x="${x+ (barW-20)/2}" y="${y-6}" fill="#cbd5e1" font-size="12" text-anchor="middle">${(v*100).toFixed(1)}%</text>`;
+      svg.innerHTML += rect + label + val;
+    });
+  }
+
+  // ======= Distribution with Bands =======
+  function drawDist(){
+    const svg = document.getElementById('distChart'); const W=svg.clientWidth||560,H=svg.clientHeight||260;
+    svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+    const vol = weights().reduce((s,x)=>s + x.vol*x.w, 0)/100 || 0.15;
+    // Normal-ish curve centered at 0, sd = vol/√252
+    const sd = vol/Math.sqrt(252);
+    const pts=[], n=200;
+    for(let i=0;i<=n;i++){ const x=-0.05 + i*(0.10/n); const y=Math.exp(-0.5*Math.pow(x/sd,2))/(sd*Math.sqrt(2*Math.PI)); pts.push([x,y]); }
+    const xScale = x=> 30 + (x+0.05)*(W-60)/0.10;
+    const yMax = Math.max(...pts.map(p=>p[1]));
+    const yScale = y=> H-30 - (y/yMax)*(H-60);
+    let path = '';
+    pts.forEach((p,i)=> path += (i?'L':'M') + xScale(p[0])+','+yScale(p[1]));
+    // Bands
+    function bandPath(k){
+      const x0=-k*sd, x1=k*sd;
+      return `M ${xScale(x0)} ${H-30} L ${xScale(x0)} ${yScale(0)} L ${xScale(x1)} ${yScale(0)} L ${xScale(x1)} ${H-30} Z`;
+    }
+    svg.innerHTML = `<path d="${bandPath(2)}" fill="#1a2350" opacity="0.6"/>
+                     <path d="${bandPath(1)}" fill="#263058" opacity="0.9"/>
+                     <path d="${path}" fill="none" stroke="${getComputedStyle(document.documentElement).getPropertyValue('--brand')}" stroke-width="2"/>`;
+  }
+
+  // Initial
+  recalc();
+
+// === Accessibility: color-blind friendly palette (mostly blues/purples/greys) ===
+// Colors are already neutral; charts derive colors from CSS variables.
+
+// === Export PDF (prototype) ===
+document.getElementById('exportPDF').onclick = () => { window.print(); };
+
+// === Benchmark Comparison Chart (simple bars) ===
+(function drawBench(){
+  const svg = document.getElementById('benchChart'); const W=svg.clientWidth||560,H=svg.clientHeight||260;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  // Simulated returns: Portfolio from current KPI; Equal-Weight and 60/40 fixed baselines
+  const kpi = document.getElementById('kpi-ret').textContent || '8.0%';
+  const pRet = parseFloat(kpi) || 8.0;
+  const eRet = 7.2, s6040 = 6.5;
+  const vals = [['Portfolio', pRet], ['Equal‑Wt', eRet], ['60/40', s6040]];
+  const max = Math.max(...vals.map(v=>v[1])) * 1.2;
+  const barW = (W-80)/vals.length, maxH = H-60;
+  svg.innerHTML='';
+  vals.forEach((g,i)=>{
+    const v=g[1]/max, h=v*maxH, x=40+i*barW+10, y=H-30-h;
+    svg.innerHTML += `<rect x="${x}" y="${y}" width="${barW-20}" height="${h}" fill="${getComputedStyle(document.documentElement).getPropertyValue('--accent')}" />` +
+      `<text x="${x+(barW-20)/2}" y="${H-12}" fill="#cbd5e1" font-size="12" text-anchor="middle">${g[0]}</text>`+
+      `<text x="${x+(barW-20)/2}" y="${y-6}" fill="#cbd5e1" font-size="12" text-anchor="middle">${g[1].toFixed(1)}%</text>`;
+  });
+})();
+
+// === Rolling Beta (simulated) ===
+(function drawBeta(){
+  const svg = document.getElementById('betaChart'); const W=svg.clientWidth||560,H=svg.clientHeight||260;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  // Generate a smooth random walk around 1.0 with slight trend from portfolio risk
+  const w = weights();
+  const risk = (w.reduce((s,x)=>s + x.vol*x.w,0)/100) || 0.15;
+  let b = 1.0 + (risk-0.15)*2; // centre beta by riskiness
+  const pts = [];
+  for(let i=0;i<80;i++){ b += (Math.random()-0.5)*0.05; pts.push([i, Math.max(0.4, Math.min(1.8, b))]); }
+  const xs = pts.map(p=>p[0]), ys = pts.map(p=>p[1]);
+  const xScale = x=> 20 + x*(W-40)/80;
+  const yMin = 0.4, yMax = 1.8;
+  const yScale = y=> H-20 - (y - yMin)*(H-40)/(yMax-yMin);
+  const d = pts.map((p,i)=> (i?'L':'M') + xScale(p[0])+','+yScale(p[1])).join(' ');
+  svg.innerHTML = `<path d="${d}" fill="none" stroke="${getComputedStyle(document.documentElement).getPropertyValue('--brand')}" stroke-width="2"/>` +
+                  `<text x="${W-60}" y="24" fill="#cbd5e1" font-size="12">β ~${pts[pts.length-1][1].toFixed(2)}</text>`;
+})();
+
+</script>
+</body>
+</html>
